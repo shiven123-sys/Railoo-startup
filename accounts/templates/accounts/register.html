@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<style>
+  form input[type="text"], form input[type="password"], form input[type="email"] {
+    width: 100%; margin-top: 0.25rem; border-radius: 0.75rem; border: 1px solid rgb(203 213 225);
+    padding: 0.75rem 1rem; font-size: 0.875rem; background: white;
+  }
+  .dark form input[type="text"], .dark form input[type="password"], .dark form input[type="email"] {
+    background: rgb(15 23 42); border-color: rgb(51 65 85); color: white;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-4 py-12">
+  <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-xl dark:border-slate-800 dark:bg-slate-900">
+    <h1 class="text-2xl font-bold">Create your account</h1>
+    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Join Railoo for safer, cleaner journeys.</p>
+
+    <form method="post" class="mt-6 space-y-4">
+      {% csrf_token %}
+      {% for field in form %}
+        <div>
+          <label class="text-sm font-medium">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<p class="mt-1 text-xs text-slate-400">{{ field.help_text|safe }}</p>{% endif %}
+          {% if field.errors %}<p class="mt-1 text-xs text-rose-600">{{ field.errors|striptags }}</p>{% endif %}
+        </div>
+      {% endfor %}
+      <button type="submit" class="w-full rounded-xl bg-railoo-rose py-3 text-sm font-semibold text-white hover:bg-rose-600">Create account</button>
+    </form>
+
+    <p class="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
+      Already have an account? <a href="{% url 'accounts:login' %}" class="font-semibold text-railoo-rose">Log in</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

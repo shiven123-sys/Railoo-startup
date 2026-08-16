@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-railoo}
+      POSTGRES_USER: ${POSTGRES_USER:-railoo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-railoo}
+    volumes:
+      - railoo_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  web:
+    build: .
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    env_file: .env
+    environment:
+      USE_POSTGRES: "True"
+      POSTGRES_HOST: db
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+volumes:
+  railoo_pgdata:
+  static_volume:
+  media_volume:

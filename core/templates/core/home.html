@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="gradient-hero">
+  <div class="mx-auto max-w-7xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
+    <div class="grid items-center gap-12 lg:grid-cols-2">
+      <div>
+        <span class="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-600 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300">
+          India's first Transit Hygiene + Safety platform
+        </span>
+        <h1 class="mt-5 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+          {{ SITE_TAGLINE }}
+        </h1>
+        <p class="mt-5 max-w-xl text-lg text-slate-600 dark:text-slate-300">
+          Find verified, rated restrooms on trains and highways, get instant women's safety
+          support, and trigger emergency SOS — all from one app.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-4">
+          <a href="#pnr-booking" class="rounded-full bg-railoo-rose px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-rose-500/30 hover:bg-rose-600">Book with PNR</a>
+          <a href="{% url 'core:highway_map' %}" class="rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800">Find Highway Restroom</a>
+        </div>
+
+        <div class="mt-12 grid grid-cols-3 gap-6">
+          <div>
+            <p class="text-3xl font-extrabold text-railoo-rose">{{ stats.verified_restrooms }}</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Verified Restrooms</p>
+          </div>
+          <div>
+            <p class="text-3xl font-extrabold text-railoo-indigo">{{ stats.railway_stations_covered }}</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Stations Covered</p>
+          </div>
+          <div>
+            <p class="text-3xl font-extrabold text-railoo-teal">{{ stats.pink_help_points }}</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Pink Help Points</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PNR Booking Card -->
+      <div id="pnr-booking" class="glass scroll-mt-24 rounded-3xl border border-slate-200/70 p-6 shadow-2xl dark:border-slate-800/70 sm:p-8">
+        <h2 class="text-xl font-bold">Book a restroom with your PNR</h2>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">We'll show verified washrooms at every upcoming station.</p>
+
+        <form id="pnr-form" class="mt-6 flex gap-3">
+          <input id="pnr-input" type="text" maxlength="10" required placeholder="Enter 10-digit PNR"
+                 class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-200 dark:border-slate-700 dark:bg-slate-900" />
+          <button type="submit" class="shrink-0 rounded-xl bg-railoo-indigo px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-600">Search</button>
+        </form>
+
+        <div id="pnr-results" class="mt-6 space-y-4"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+  <h2 class="text-2xl font-bold">Top-rated restrooms right now</h2>
+  <div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    {% for r in top_rated %}
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="font-semibold">{{ r.name }}</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400">{{ r.station_name|default:r.highway_name }}</p>
+        </div>
+        <span class="rounded-full bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+          {{ r.cleanliness_rating|floatformat:1 }}&#9733;
+        </span>
+      </div>
+      <div class="mt-3 flex flex-wrap gap-2 text-xs">
+        {% if r.is_women_only %}<span class="rounded-full bg-rose-50 px-2 py-1 text-rose-600 dark:bg-rose-950/40 dark:text-rose-300">Women Only</span>{% endif %}
+        {% if r.is_wheelchair_accessible %}<span class="rounded-full bg-slate-100 px-2 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">Wheelchair</span>{% endif %}
+        {% if r.has_baby_care %}<span class="rounded-full bg-slate-100 px-2 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">Baby Care</span>{% endif %}
+        <span class="rounded-full bg-slate-100 px-2 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">{% if r.is_paid %}₹{{ r.price }}{% else %}Free{% endif %}</span>
+      </div>
+    </div>
+    {% empty %}
+    <p class="text-sm text-slate-500 dark:text-slate-400">No restrooms seeded yet — run the seed command in the README to populate demo data.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const form = document.getElementById('pnr-form');
+  const resultsBox = document.getElementById('pnr-results');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const pnr = document.getElementById('pnr-input').value.trim();
+    if (!pnr) return;
+
+    resultsBox.innerHTML = '<p class="text-sm text-slate-500">Looking up train route…</p>';
+
+    try {
+      const res = await fetch(`/api/v1/restrooms/pnr/${encodeURIComponent(pnr)}/`);
+      if (!res.ok) throw new Error('Lookup failed');
+      const data = await res.json();
+
+      resultsBox.innerHTML = `
+        <div class="rounded-xl bg-slate-50 p-4 text-sm dark:bg-slate-800">
+          <p class="font-semibold">${data.train_name} (#${data.train_number})</p>
+          <p class="text-slate-500 dark:text-slate-400">Currently near ${data.current_station}</p>
+        </div>
+      ` + data.upcoming_stations.map(s => `
+        <div class="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+          <div class="flex justify-between text-sm font-semibold">
+            <span>${s.name} (${s.code})</span>
+            <span class="text-slate-500 dark:text-slate-400">${s.eta_minutes} min · ${s.distance_km} km</span>
+          </div>
+          <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            ${s.restrooms.length} verified washroom${s.restrooms.length === 1 ? '' : 's'} available
+          </p>
+        </div>
+      `).join('');
+    } catch (err) {
+      resultsBox.innerHTML = '<p class="text-sm text-rose-500">Could not fetch that PNR. Try again.</p>';
+    }
+  });
+</script>
+{% endblock %}

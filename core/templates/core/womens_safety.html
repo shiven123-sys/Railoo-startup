@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+  <div class="rounded-3xl bg-gradient-to-br from-rose-500 to-indigo-600 p-8 text-white shadow-xl">
+    <h1 class="text-2xl font-bold">Women's Safety Dashboard</h1>
+    <p class="mt-1 max-w-2xl text-rose-50">Pink Help Points, period care, and women-only facilities — all in one place.</p>
+  </div>
+
+  <div class="mt-10 grid gap-8 lg:grid-cols-2">
+    <div>
+      <h2 class="text-lg font-bold">Pink Help Points nearby</h2>
+      <div class="mt-4 space-y-3">
+        {% for hp in help_points %}
+        <div class="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+          <div class="flex items-start justify-between">
+            <p class="font-semibold">{{ hp.name }}</p>
+            {% if hp.is_staffed_24x7 %}<span class="rounded-full bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">24x7</span>{% endif %}
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400">{{ hp.location_description }}</p>
+          {% if hp.contact_number %}<p class="mt-1 text-xs font-medium text-railoo-rose">{{ hp.contact_number }}</p>{% endif %}
+        </div>
+        {% empty %}
+        <p class="text-sm text-slate-500 dark:text-slate-400">No help points seeded yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-lg font-bold">Period care locations</h2>
+      <div class="mt-4 space-y-3">
+        {% for p in period_care_locations %}
+        <div class="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+          <div class="flex items-start justify-between">
+            <p class="font-semibold">{{ p.name }}</p>
+            {% if p.is_24_hours %}<span class="rounded-full bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">24 hrs</span>{% endif %}
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400">{{ p.get_category_display }}</p>
+          {% if p.contact_number %}<p class="mt-1 text-xs font-medium text-railoo-rose">{{ p.contact_number }}</p>{% endif %}
+        </div>
+        {% empty %}
+        <p class="text-sm text-slate-500 dark:text-slate-400">No period care locations seeded yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-10 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm dark:border-slate-800 dark:bg-slate-900">
+    Need immediate help? Use the <a href="{% url 'core:sos' %}" class="font-semibold text-railoo-rose">SOS button</a> or call the Women's Helpline: <strong>1091</strong>.
+  </div>
+</div>
+{% endblock %}

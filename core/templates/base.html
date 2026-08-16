@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ SITE_NAME }} — {{ SITE_TAGLINE }}{% endblock %}</title>
+  <meta name="description" content="Railoo — India's integrated transit hygiene, women's safety and emergency response platform for railways and highways.">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            railoo: {
+              rose: '#e11d48',
+              indigo: '#4f46e5',
+              teal: '#0d9488',
+            },
+          },
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body { font-family: 'Inter', ui-sans-serif, system-ui; }
+    .glass {
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .dark .glass {
+      background: rgba(15, 23, 42, 0.55);
+    }
+    .gradient-hero {
+      background: radial-gradient(circle at 15% 20%, rgba(225,29,72,0.18), transparent 45%),
+                  radial-gradient(circle at 85% 0%, rgba(79,70,229,0.18), transparent 40%),
+                  radial-gradient(circle at 50% 100%, rgba(13,148,136,0.15), transparent 45%);
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+
+  <script>
+    if (localStorage.getItem('railoo-theme') === 'dark' ||
+        (!localStorage.getItem('railoo-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased">
+
+  <!-- Floating SOS button, present on every page for a signed-in user -->
+  {% if user.is_authenticated %}
+  <a href="{% url 'core:sos' %}"
+     class="fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full
+            bg-railoo-rose text-white shadow-2xl shadow-rose-500/40 ring-4 ring-white/40
+            transition hover:scale-105 active:scale-95 dark:ring-slate-900/60"
+     title="Emergency SOS">
+    <span class="text-xs font-extrabold tracking-wider">SOS</span>
+  </a>
+  {% endif %}
+
+  <nav class="sticky top-0 z-40 glass border-b border-slate-200/60 dark:border-slate-800/60">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+      <a href="{% url 'core:home' %}" class="flex items-center gap-2">
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-railoo-rose to-railoo-indigo text-white font-extrabold">R</span>
+        <span class="text-lg font-extrabold tracking-tight">Railoo</span>
+      </a>
+
+      <div class="hidden items-center gap-6 text-sm font-medium text-slate-600 dark:text-slate-300 lg:flex">
+        <a href="{% url 'core:home' %}" class="hover:text-railoo-rose">Home</a>
+        {% if user.is_authenticated %}<a href="{% url 'core:dashboard' %}" class="hover:text-railoo-rose">Dashboard</a>{% endif %}
+        <a href="{% url 'core:home' %}#pnr-booking" class="hover:text-railoo-rose">Book Restroom</a>
+        <a href="{% url 'core:highway_map' %}" class="hover:text-railoo-rose">Highway</a>
+        <a href="{% url 'core:womens_safety' %}" class="hover:text-railoo-rose">Women&rsquo;s Safety</a>
+        <a href="{% url 'core:sos' %}" class="hover:text-railoo-rose">SOS</a>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button id="theme-toggle" type="button"
+                class="rounded-full border border-slate-300 p-2 text-slate-600 hover:bg-slate-100
+                       dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800" title="Toggle dark mode">
+          <svg id="theme-icon-sun" class="hidden h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.36 6.36l-.7-.7M6.34 6.34l-.7-.7m12.02 0l-.7.7M6.34 17.66l-.7.7M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <svg id="theme-icon-moon" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        </button>
+
+        {% if user.is_authenticated %}
+          <a href="{% url 'accounts:profile' %}" class="hidden text-sm font-semibold sm:block">{{ user.get_full_name|default:user.username }}</a>
+          <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900">Logout</button>
+          </form>
+        {% else %}
+          <a href="{% url 'accounts:login' %}" class="text-sm font-semibold hover:text-railoo-rose">Login</a>
+          <a href="{% url 'accounts:register' %}" class="rounded-full bg-railoo-rose px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-rose-500/30 hover:bg-rose-600">Register</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  {% if messages %}
+  <div class="mx-auto mt-4 max-w-7xl px-4 sm:px-6 lg:px-8">
+    {% for message in messages %}
+      <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="mt-24 border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+    <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div class="grid gap-8 md:grid-cols-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-railoo-rose to-railoo-indigo text-white font-extrabold text-sm">R</span>
+            <span class="font-extrabold">Railoo</span>
+          </div>
+          <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">{{ SITE_TAGLINE }}</p>
+        </div>
+        <div>
+          <h4 class="text-sm font-semibold text-slate-900 dark:text-white">Platform</h4>
+          <ul class="mt-3 space-y-2 text-sm text-slate-500 dark:text-slate-400">
+            <li><a href="{% url 'core:home' %}" class="hover:text-railoo-rose">Railway Booking</a></li>
+            <li><a href="{% url 'core:highway_map' %}" class="hover:text-railoo-rose">Highway Finder</a></li>
+            <li><a href="{% url 'core:womens_safety' %}" class="hover:text-railoo-rose">Women&rsquo;s Safety</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-semibold text-slate-900 dark:text-white">Emergency</h4>
+          <ul class="mt-3 space-y-2 text-sm text-slate-500 dark:text-slate-400">
+            <li><a href="{% url 'core:sos' %}" class="hover:text-railoo-rose">SOS</a></li>
+            <li>Police: 100</li>
+            <li>Ambulance: 108</li>
+            <li>Railway Helpline: 139</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-semibold text-slate-900 dark:text-white">Admin</h4>
+          <ul class="mt-3 space-y-2 text-sm text-slate-500 dark:text-slate-400">
+            <li><a href="/admin/" class="hover:text-railoo-rose">Admin Panel</a></li>
+          </ul>
+        </div>
+      </div>
+      <p class="mt-10 text-xs text-slate-400 dark:text-slate-500">&copy; {{ SITE_NAME }} — prototype build. Not affiliated with Indian Railways or NHAI.</p>
+    </div>
+  </footer>
+
+  <script>
+    const root = document.documentElement;
+    const sunIcon = document.getElementById('theme-icon-sun');
+    const moonIcon = document.getElementById('theme-icon-moon');
+
+    function syncThemeIcon() {
+      const isDark = root.classList.contains('dark');
+      sunIcon.classList.toggle('hidden', !isDark);
+      moonIcon.classList.toggle('hidden', isDark);
+    }
+    syncThemeIcon();
+
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      root.classList.toggle('dark');
+      localStorage.setItem('railoo-theme', root.classList.contains('dark') ? 'dark' : 'light');
+      syncThemeIcon();
+    });
+  </script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>
