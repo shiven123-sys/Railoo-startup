@@ -8,3 +8,8 @@ media/
 .venv/
 venv/
 .DS_Store
+env/
+venv/
+*.pyc
+__pycache__/
+db.sqlite3
